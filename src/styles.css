@@ -88,3 +88,8 @@ body {
 .game-info {
   margin-left: 20px;
 }
+
+.square-winning {
+  background-color: #4caf50;
+  font-weight: bold;
+}
