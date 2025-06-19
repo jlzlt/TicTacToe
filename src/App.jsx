@@ -27,7 +27,7 @@ function Board({ xIsNext, squares, onPlay }) {
     } else {
       nextSquares[i] = "O";
     }
-    onPlay(nextSquares);
+    onPlay(nextSquares, i);
   }
 
   let status;
@@ -71,14 +71,22 @@ function Board({ xIsNext, squares, onPlay }) {
 }
 
 export default function Game() {
-  const [history, setHistory] = useState([Array(9).fill(null)]);
+  const [history, setHistory] = useState([
+    { squares: Array(9).fill(null), moveLocation: null },
+  ]);
   const [currentMove, setCurrentMove] = useState(0);
   const [isAscending, setIsAscending] = useState(true);
   const xIsNext = currentMove % 2 === 0;
-  const currentSquares = history[currentMove];
+  const currentSquares = history[currentMove].squares;
 
-  function handlePlay(nextSquares) {
-    const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
+  function handlePlay(nextSquares, squareIndex) {
+    const row = Math.floor(squareIndex / 3);
+    const col = squareIndex % 3;
+
+    const nextHistory = [
+      ...history.slice(0, currentMove + 1),
+      { squares: nextSquares, moveLocation: { row, col } },
+    ];
     setHistory(nextHistory);
     setCurrentMove(nextHistory.length - 1);
   }
@@ -87,15 +95,22 @@ export default function Game() {
     setCurrentMove(nextMove);
   }
 
-  const moves = history.map((squares, move) => {
+  const moves = history.map((step, move) => {
+    const { moveLocation } = step;
+    const location = moveLocation
+      ? `(${moveLocation.row}, ${moveLocation.col})`
+      : "";
     const isCurrentMove = move === currentMove;
     let description;
 
     if (isCurrentMove) {
       description =
-        move > 0 ? `You are at the move #${move}` : "You are at game start";
+        move > 0
+          ? `You are at the move #${move} ${location}`
+          : "You are at game start";
     } else {
-      description = move > 0 ? `Go to move #${move}` : "Go to game start";
+      description =
+        move > 0 ? `Go to move #${move} ${location}` : "Go to game start";
     }
     return (
       <li key={move}>
@@ -108,7 +123,7 @@ export default function Game() {
     );
   });
 
-  const sortedMoves = isAscending ? moves.slice() : moves.reverse().slice();
+  const sortedMoves = isAscending ? moves.slice() : moves.slice().reverse();
 
   return (
     <div className="game">
